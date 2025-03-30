@@ -4,51 +4,47 @@ import java.util.Scanner;
 
 public class Minimax {
     static final int EMPTY = 0;
-    static final int HUMAN =  -1;
+    static final int HUMAN = -1;
     static final int AI = 1;
 
     static class Play {
         int row, column;
-        Play(int row, int column){
+        Play(int row, int column) {
             this.row = row;
             this.column = column;
         }
     }
-
 
     public static void main(String[] args) {
         int[][] table = new int[3][3];
         startTable(table);
 
         Random random = new Random();
-
         table[random.nextInt(3)][random.nextInt(3)] = AI;
 
-        while(freePositions(table) > 0){
+        while (freePositions(table) > 0) {
             showTable(table);
 
             Play humanPlay = readPlay(table);
             table[humanPlay.row][humanPlay.column] = HUMAN;
-            if(verifyVictory(table) != 0) break;
+            if (verifyVictory(table) != -1) break;
 
             Play AIPlay = bestPlay(table);
             table[AIPlay.row][AIPlay.column] = AI;
-            if(verifyVictory(table) != 0) break;
+            if (verifyVictory(table) != -1) break;
         }
+
         showTable(table);
         stateWin(verifyVictory(table), table);
-
     }
 
-    static void startTable(int[][] table){
-        for(int i = 0; i < 3; i++){
+    static void startTable(int[][] table) {
+        for (int i = 0; i < 3; i++) {
             Arrays.fill(table[i], EMPTY);
         }
     }
 
     static int verifyVictory(int[][] table) {
-        int winner = -1;
-
         for (int i = 0; i < 3; i++) {
             if (table[i][0] == table[i][1] && table[i][0] == table[i][2] && table[i][0] != 0) {
                 return table[i][0];
@@ -73,11 +69,8 @@ public class Minimax {
             return 0;
         }
 
-        return -3;
+        return -1;
     }
-
-
-    static int plus(int a, int b, int c) { return a + b + c; }
 
     static int freePositions(int[][] table) {
         int free = 0;
@@ -89,19 +82,19 @@ public class Minimax {
         return free;
     }
 
-    static Play bestPlay(int[][] table){
+    static Play bestPlay(int[][] table) {
         int bestValue = Integer.MIN_VALUE;
         Play bestPlay = new Play(-1, -1);
 
-        for(int i = 0; i < 3; i++){
-            for(int j = 0; j< 3; j++){
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
                 if (table[i][j] == EMPTY) {
                     table[i][j] = AI;
-                    int valor = minimax(table, 0, false);
+                    int value = minimax(table, 0, false);
                     table[i][j] = EMPTY;
 
-                    if (valor > bestValue) {
-                        bestValue = valor;
+                    if (value > bestValue) {
+                        bestValue = value;
                         bestPlay = new Play(i, j);
                     }
                 }
@@ -168,6 +161,7 @@ public class Minimax {
             System.out.println("\n  -------------");
         }
     }
+
     static Play readPlay(int[][] table) {
         Scanner scanner = new Scanner(System.in);
         int linha, coluna;
@@ -184,5 +178,4 @@ public class Minimax {
 
         return new Play(linha, coluna);
     }
-
 }
