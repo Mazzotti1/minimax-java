@@ -6,6 +6,8 @@ public class Minimax {
     static final int EMPTY = 0;
     static final int HUMAN = -1;
     static final int AI = 1;
+    static final int NOBODY = 15;
+    static final int DRAW = 8;
 
     static class Play {
         int row, column;
@@ -27,15 +29,24 @@ public class Minimax {
 
             Play humanPlay = readPlay(table);
             table[humanPlay.row][humanPlay.column] = HUMAN;
-            if (verifyVictory(table) != -1) break;
+
+            int winner = verifyVictory(table);
+            if (winner != NOBODY) {
+                stateWin(winner, table);
+                break;
+            }
 
             Play AIPlay = bestPlay(table);
             table[AIPlay.row][AIPlay.column] = AI;
-            if (verifyVictory(table) != -1) break;
+
+            winner = verifyVictory(table);
+            if (winner != NOBODY) {
+                stateWin(winner, table);
+                break;
+            }
         }
 
         showTable(table);
-        stateWin(verifyVictory(table), table);
     }
 
     static void startTable(int[][] table) {
@@ -46,30 +57,30 @@ public class Minimax {
 
     static int verifyVictory(int[][] table) {
         for (int i = 0; i < 3; i++) {
-            if (table[i][0] == table[i][1] && table[i][0] == table[i][2] && table[i][0] != 0) {
+            if (table[i][0] == table[i][1] && table[i][0] == table[i][2] && table[i][0] != EMPTY) {
                 return table[i][0];
             }
         }
 
-        for (int i = 0; i < 3; i++) {
-            if (table[0][i] == table[1][i] && table[0][i] == table[2][i] && table[0][i] != 0) {
-                return table[0][i];
+        for (int j = 0; j < 3; j++) {
+            if (table[0][j] == table[1][j] && table[0][j] == table[2][j] && table[0][j] != EMPTY) {
+                return table[0][j];
             }
         }
 
-        if (table[0][0] == table[1][1] && table[0][0] == table[2][2] && table[0][0] != 0) {
+        if (table[0][0] == table[1][1] && table[0][0] == table[2][2] && table[0][0] != EMPTY) {
             return table[0][0];
         }
 
-        if (table[0][2] == table[1][1] && table[0][2] == table[2][0] && table[0][2] != 0) {
+        if (table[0][2] == table[1][1] && table[0][2] == table[2][0] && table[0][2] != EMPTY) {
             return table[0][2];
         }
 
         if (freePositions(table) == 0) {
-            return 0;
+            return DRAW;
         }
 
-        return -1;
+        return NOBODY;
     }
 
     static int freePositions(int[][] table) {
@@ -90,22 +101,27 @@ public class Minimax {
             for (int j = 0; j < 3; j++) {
                 if (table[i][j] == EMPTY) {
                     table[i][j] = AI;
-                    int value = minimax(table, 0, false);
+                    int score = minimax(table, 0, false);
                     table[i][j] = EMPTY;
 
-                    if (value > bestValue) {
-                        bestValue = value;
+                    if (score > bestValue) {
+                        bestValue = score;
                         bestPlay = new Play(i, j);
                     }
                 }
             }
         }
+
         return bestPlay;
     }
 
     static int minimax(int[][] table, int depth, boolean isMaximizing) {
         int winner = verifyVictory(table);
-        if (winner != -1) return winner;
+        if (winner != NOBODY) {
+            if (winner == AI) return 10 - depth;
+            if (winner == HUMAN) return depth - 10;
+            return 0;
+        }
 
         if (isMaximizing) {
             int bestValue = Integer.MIN_VALUE;
@@ -138,7 +154,7 @@ public class Minimax {
         switch (winnerPlayer) {
             case HUMAN -> System.out.println("\n::: Parabéns, você ganhou! :::\n");
             case AI -> System.out.println("\n::: A IA venceu, tente novamente! :::\n");
-            case 0 -> System.out.println("\n::: Empate! Boa tentativa! :::\n");
+            case DRAW -> System.out.println("\n::: Empatou! :::\n");
             default -> System.out.println("\n::: Jogo em andamento :::\n");
         }
         showTable(table);
@@ -164,18 +180,31 @@ public class Minimax {
 
     static Play readPlay(int[][] table) {
         Scanner scanner = new Scanner(System.in);
-        int linha, coluna;
+        int row, column;
 
         do {
             System.out.print("Informe a LINHA [1, 2 ou 3]: ");
-            linha = scanner.nextInt() - 1;
-        } while (linha < 0 || linha > 2);
+            row = scanner.nextInt() - 1;
+        } while (row < 0 || row > 2);
 
         do {
             System.out.print("Informe a COLUNA [1, 2 ou 3]: ");
-            coluna = scanner.nextInt() - 1;
-        } while (coluna < 0 || coluna > 2);
+            column = scanner.nextInt() - 1;
+        } while (column < 0 || column > 2);
 
-        return new Play(linha, coluna);
+        while (table[row][column] != EMPTY) {
+            System.out.println("Essa posição já está ocupada! Escolha outra.");
+            do {
+                System.out.print("Informe a LINHA [1, 2 ou 3]: ");
+                row = scanner.nextInt() - 1;
+            } while (row < 0 || row > 2);
+
+            do {
+                System.out.print("Informe a COLUNA [1, 2 ou 3]: ");
+                column = scanner.nextInt() - 1;
+            } while (column < 0 || column > 2);
+        }
+
+        return new Play(row, column);
     }
 }
